@@ -1,70 +1,131 @@
-	<div class="block">
-		You can add your own HTML above or below the directory listing. Simply explore the <code>header.html</code> and <code>footer.html</code> files.
-	</div><!--/.postlisting-->
+    <div class="block">
+        You can add your own HTML above or below the directory listing. Simply explore the <code>header.html</code> and <code>footer.html</code> files.
+    </div><!--/.postlisting-->
 
 </div><!--/.wrapper-->
 
 <div class="footer">
-	Apaxy by <a href="https://twitter.com/adamwhitcroft">@adamwhitcroft</a>
+    Apaxy by <a href="https://twitter.com/adamwhitcroft">@adamwhitcroft</a>
 </div><!--/.footer-->
+
 <script type="text/javascript">
-	// content filtering, based on "light javascript table filter" by Chris Coyier
-	// https://codepen.io/chriscoyier/pen/tIuBL - MIT License
-	(function(document) {
-                'use strict';
+    (function(document) {
+        'use strict';
 
-                var TableFilter = (function(Arr) {
+        // content filtering, based on "light javascript table filter" by Chris Coyier
+        // https://codepen.io/chriscoyier/pen/tIuBL - MIT License
+        var TableFilter = (function(Arr) {
 
-			// the search bar element
-                        var _input;
+            // the search bar element
+            var _input;
 
-			// find all rows of all tables and call _filter on them
-                        function _onInputEvent(e) {
-                                _input = e.target;
-                                var tables = document.getElementsByTagName('table');
-                                Arr.forEach.call(tables, function(table) {
-                                        Arr.forEach.call(table.tBodies, function(tbody) {
-                                                Arr.forEach.call(tbody.rows, _filter);
-                                        });
-                                });
-                        }
-
-			// show or hide a row based on the value of _input
-                        function _filter(row) {
-                        	// skip "special" rows
-                                if (row.className.indexOf('indexhead') != -1 || row.className.indexOf('parent') != -1) {
-                                        return;
-                                }
-                                // only check the 'name' field
-                                var text = row.getElementsByClassName('indexcolname')[0].textContent.toLowerCase();
-                                var val = _input.value.toLowerCase();
-                                // change display type to show / hide this row
-                                row.style.display = text.indexOf(val) === -1 ? 'none' : 'table-row';
-                        }
-
-                        return {
-                                init: function() {
-                                	// grab the 2nd child and add the parent class. tr:nth-child(2)
-					var secondRow = document.getElementsByTagName('tr')[1];
-					if (secondRow !== null) {
-						var secondRowName = secondRow.getElementsByClassName('indexcolname')[0].textContent;
-						// when apaxy is installed at doc root, there is no "parent directory" row
-                                		if (secondRowName === 'Parent Directory') {
-							secondRow.className += ' parent';
-						}
-					}
-					// find the search box and bind the input event
-                                        document.getElementById('filter').oninput = _onInputEvent;
-                                }
-                        };
-
-                })(Array.prototype);
-
-                document.addEventListener('readystatechange', function() {
-                        if (document.readyState === 'complete') {
-                                TableFilter.init();
-                        }
+            // find all rows of all tables and call _filter on them
+            function _onInputEvent(e) {
+                _input = e.target;
+                var tables = document.getElementsByTagName('table');
+                Arr.forEach.call(tables, function(table) {
+                    Arr.forEach.call(table.tBodies, function(tbody) {
+                        Arr.forEach.call(tbody.rows, _filter);
+                    });
                 });
+            }
 
-        })(document);
+            // show or hide a row based on the value of _input
+            function _filter(row) {
+                // skip "special" rows
+                if (row.className.indexOf('indexhead') != -1 || row.className.indexOf('parent') != -1) {
+                return;
+                }
+                // only check the 'name' field
+                var text = row.getElementsByClassName('indexcolname')[0].textContent.toLowerCase();
+                var val = _input.value.toLowerCase();
+                // change display type to show / hide this row
+                row.style.display = text.indexOf(val) === -1 ? 'none' : 'table-row';
+                }
+
+            return {
+                init: function() {
+                    // grab the 2nd child and add the parent class. tr:nth-child(2)
+                    var secondRow = document.getElementsByTagName('tr')[1];
+                    if (secondRow !== null) {
+                        var secondRowName = secondRow.getElementsByClassName('indexcolname')[0].textContent;
+                        // when apaxy is installed at doc root, there is no "parent directory" row
+                        if (secondRowName === 'Parent Directory') {
+                            secondRow.className += ' parent';
+                        }
+                    }
+
+                    // find the search box and bind the input event
+                    document.getElementById('filter').oninput = _onInputEvent;
+                }
+            };
+
+        })(Array.prototype);
+
+        var SortDisplay = (function(Arr) {
+
+            var params;
+
+            function transformToAssocArray(prmstr) {
+                var arr = {};
+                var prmarr = prmstr.split(";");
+                for (var i = 0; i < prmarr.length; i++) {
+                    var tmparr = prmarr[i].split("=");
+                    arr[tmparr[0]] = tmparr[1];
+                }
+                return arr;
+            }
+
+            function addArrows() {
+                var table = document.getElementsByTagName('table')[0];
+                var row = table.getElementsByClassName('indexhead')[0];
+                var cells = row.getElementsByTagName('th');
+                var cell;
+
+                console.log(params.C);
+                switch(params.C) {
+                case 'N':
+                    cell = cells[1];
+                    break;
+                case 'M':
+                    cell = cells[2];
+                    break;
+                case 'S':
+                    cell = cells[3];
+                    break;
+                default:
+                case undefined:
+                    return;
+                }
+                console.log(cell);
+
+                cell.className += ' sort';
+                if (params.O === 'D') {
+                    cell.className += ' descending';
+                } else if (params.O === 'A') {
+                    cell.className += ' ascending';
+                }
+            }
+
+            return {
+                init: function() {
+                    var prmstr = window.location.search.substr(1);
+                    if (prmstr === null || prmstr === '' ) {
+                        return;
+                    }
+                    params = transformToAssocArray(prmstr);
+                    addArrows();
+                }
+            };
+
+        })(Array.prototype);
+
+        document.addEventListener('readystatechange', function() {
+            if (document.readyState === 'complete') {
+                TableFilter.init();
+                SortDisplay.init();
+            }
+        });
+
+    })(document);
 </script>
